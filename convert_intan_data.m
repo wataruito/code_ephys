@@ -1,6 +1,5 @@
 %#########################################################################
-% Convert Intan .int file to 
-Axon format
+% Convert Intan .int file to Axon format
 %
 % Functions:
 %   This program chops Intan recording file into 400 ms sweeps centered at
@@ -20,15 +19,15 @@ function convert_intan_data
 % Get the working directory
 folder_name = uigetdir;
 % Generate directory file list by 'dir *.int
-dataSeriseFiles = dir([folder_name '\*.int']);
+dataSeriseFiles = dir([folder_name filesep '*.int']);
 [dataSeriseFilesNumber, d2] = size(dataSeriseFiles);
 
 for k = 1:dataSeriseFilesNumber
     [pathstr,fileNameNoExt,ext] = fileparts(dataSeriseFiles(k).name);
-    [d1, d2] = size(dir([folder_name '\' fileNameNoExt '*.atf']));
+    [d1, d2] = size(dir([folder_name filesep fileNameNoExt '*.atf']));
     if d1 == 0
         [intFileNameExt,t,amps,data,aux] = ...
-            read_intan_data_2([folder_name '\' dataSeriseFiles(k).name]);
+            read_intan_data_2([folder_name filesep dataSeriseFiles(k).name]);
         from_int_file_to_atf_time_trigger_files(intFileNameExt,t,amps,data,aux);
     end
 end
@@ -318,11 +317,11 @@ for channel = 1:channel_n
     channelName = int2str(amps(channel));
     if (amps(channel) < 10) channelName = ['0' channelName]; end
     
-    file_name = [pathstr '\' intFileName '_ch' channelName '.atf'];
+    file_name = [pathstr filesep intFileName '_ch' channelName '.atf'];
     workingStorage = squeeze(dataSeriseForSweep(channel, :, :));
     save(file_name, 'workingStorage', '-tabs', '-ascii');
     
-    file_name = [pathstr '\' intFileName '_ch' channelName '_time_aux'];
+    file_name = [pathstr filesep intFileName '_ch' channelName '_time_aux'];
     timeSerise = squeeze(timeSeriseForSweep(channel, :, :));
     auxSerise = squeeze(auxSeriseForSweep(channel, :, :, :));
     save(file_name, 'timeSerise' ,'auxSerise');
