@@ -379,10 +379,6 @@ for channel = 1:channel_n
     % movefile(file_name,intFileName);
 end
 
-% Move the original int file to intFileName folder
-% movefile(intFileNameExt, intFileName);
-% exit;
-
 function frame_convertor(intFileNameExt,t,aux)
 
 % Read total number of sampling points, d1.
@@ -466,4 +462,3 @@ end
 timeFrame = [timeStamp' frameNum'];
 file_name = [pathstr filesep fileNameNoExt '_timeFrame'];
 save(file_name, 'timeFrame');
-
