@@ -1,5 +1,5 @@
-function [filename,t,amps,data,aux] = read_intan_data_2(filename)
-
+function [out] = read_intan_data_2(filename)
+% [intFileNameExt,t,amps,data,aux]
 % [t,amps,data,aux] = read_intan_data
 %
 % Opens file selection GUI to select and then read data from an Intan 
@@ -48,11 +48,11 @@ end
 num_amps = sum(amp_on);
 
 % Create a list of amplifier channels in this file.
-amps = zeros(1,num_amps);
+out.amps = zeros(1,num_amps);
 index = 1;
 for i=1:64
     if (amp_on(i) == 1)
-        amps(index) = i;
+        out.amps(index) = i;
         index = index + 1;
     end
 end
@@ -84,14 +84,14 @@ else
 end
 
 for i=1:num_amps
-    fprintf(1, '%d ', amps(i));
+    fprintf(1, '%d ', out.amps(i));
 end
 fprintf(1, '\n\n');
 
 % Pre-allocate large data matrices.
-aux = zeros(t_count,6,'uint8');
+out.aux = zeros(t_count,6,'uint8');
 t = (0:1:(t_count-1))/25000;
-t = t';
+out.t = t';
 %--------------------------------------
 % Replace code code below with much faster code CDP 06-24-10
 % Go back to the beginning of the file...
@@ -112,7 +112,7 @@ fprintf(1, 'Extracting aux data... ');
 aux_data = data2((num_amps*4)+1:num_amps*4+1:filesize-67);
 
 % extract individual bits
-aux = [bitget(aux_data,6),bitget(aux_data,5),bitget(aux_data,4),bitget(aux_data,3),bitget(aux_data,2),bitget(aux_data,1)];
+out.aux = [bitget(aux_data,6),bitget(aux_data,5),bitget(aux_data,4),bitget(aux_data,3),bitget(aux_data,2),bitget(aux_data,1)];
 clear aux_data;
 fprintf(1, 'Completed!\n');
 
@@ -135,12 +135,12 @@ fprintf(1, 'Completed!\n');
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Modified v1.1 Need transpose (WI 2016-08-14)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-disp('Extracting recording data... ');
+fprintf(1, 'Extracting recording data... ');
 data4 = vec2mat(data2, num_amps*4+1); % convert into a matrix with num_amps*4+1 columns
 data4(:,num_amps*4+1) = []; % remove the AUX column
 data6 = reshape(data4.',[],1); % convert transposed one to one column
 data6 = typecast(data6,'single'); % convert 4 bytes binary to single
-data = vec2mat(data6, num_amps); % convert into a matrix of single with num_amps columns
+out.data = vec2mat(data6, num_amps); % convert into a matrix of single with num_amps columns
 fprintf(1, 'Completed!\n');
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
