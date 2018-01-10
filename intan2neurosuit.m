@@ -1,4 +1,3 @@
-function intan2neurosuit
 % intan2neurosuit - Convert Intan file to Neurosuit format.
 %
 %  Extract recording data Intan amplifier data files (*.int) and convert
@@ -35,7 +34,6 @@ function intan2neurosuit
 %    .samplingRate   LFP sampling rate [default = 1250]
 %    .duration       duration, in seconds, of LFP interval
 %
-%
 %  EXAMPLES
 %
 %    % channel ID 5 (= # 6), from 0 to 120 seconds
@@ -46,51 +44,35 @@ function intan2neurosuit
 %    lfp = bz_GetLFP([1 2 3 4 10 17],'restrict',[0 120]);
 %    % channel # 3 (= ID 2), from 0 to 120 seconds
 %    lfp = bz_GetLFP(3,'restrict',[0 120],'select','number');
-
-% Copyright (C) 2004-2011 by Michaël Zugaro
-% editied by David Tingley, 2017
 %
-% NOTES
-% -'select' option has been removed, it allowed switching between 0 and 1
-%   indexing.  This should no longer be necessary with .lfp.mat structs
+%  NOTES
+% 
+%  TODO
 %
-% TODO
-% add saveMat input
-% expand channel selection options (i.e. region or spikegroup)
-% add forcereload
-
-%#########################################################################
-% Convert Intan .int file to Axon format
+%  BUG FIX
 %
-% Functions:
-%   This program chops Intan recording file into 400 ms sweeps centered at
-%   the triger from aux1 and aux2 for right and left side recording, respectively.
-%   Resulting data will be output into the same directory of the input
-%   file.
-%#########################################################################
-% Bug fix
-% 2017-12-13
-% When total 6 channel recording, 5th and 6th extracting data is 0.
-% Define the belonging either right/left in from_int_file_to_atf_time_trigger_files
-% for the additional recording channels.
-%#########################################################################
+%    2017-12-13
+%    When total 6 channel recording, 5th and 6th extracting data is 0.
+%    Define the belonging either right/left in from_int_file_to_atf_time_trigger_files
+%    for the additional recording channels.
+%
 
 disp(['The working folder: ' pwd])
-dataSeriseFiles = dir([pwd filesep '*.int']); % Get file list of *.int
-[dataSeriseFilesNumber, ~] = size(dataSeriseFiles);
+fileList = dir([pwd filesep '*.int']); % Get file list of *.int
+[filesNum, ~] = size(fileList);
 
-for k = 1:dataSeriseFilesNumber
-    [~, fileNameNoExt, ~] = fileparts(dataSeriseFiles(k).name);
+for k = 1:filesNum
+    [~, fileNameNoExt, ~] = fileparts(fileList(k).name);
     [d1, ~] = size(dir([pwd filesep fileNameNoExt '*.atf']));
     if d1 == 0
         [intFileNameExt,t,amps,data,aux] = ...
-            readIntan([pwd filesep dataSeriseFiles(k).name]);
+            readIntan([pwd filesep fileList(k).name]);
         
         extractFrameNum(intFileNameExt,t,aux);
         
         from_int_file_to_atf_time_trigger_files(intFileNameExt,t,amps,data,aux);
     end
-    disp(['completed ', num2str(k), '/', num2str(dataSeriseFilesNumber)]);
+    disp(['completed ', num2str(k), '/', num2str(filesNum)]);
 end
 
 

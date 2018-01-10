@@ -1,30 +1,82 @@
 
 function [filename,t,amps,data,aux] = readIntan(filename)
-
-% [t,amps,data,aux] = read_intan_data
+%% readIntan - IO to read Intan int file
 %
-% Opens file selection GUI to select and then read data from an Intan
-% amplifier data file (*.int).
+%  Read Intan int file
 %
-% t = time vector (in seconds)
-% amps = vector listing active amplifier channels
-% data = matrix of electrode-referred amplifier signals (in microvolts)
-% aux = matrix of six auxiliary TTL input signals
+%  USAGE
+%    >> [filename,t,amps,data,aux] = readIntan(filename)
 %
-% Example usage:
-%  >> [t,amps,data,aux] = read_intan_data;
-%  >> plot(t,data(:,1));
+%  INPUTS
 %
-% Version 1.1, June 26, 2010
-% (c) 2010, Intan Technologies, LLC
-% For more information, see http://www.intantech.com
-% For updates and latest version, see http://www.intantech.com/software.html
+%  OUTPUTS
+%    filename = full path file name in ascii
+%    t = time vector (in seconds)
+%    amps = vector listing active amplifier channels
+%    data = matrix of electrode-referred amplifier signals (in microvolts)
+%    aux = matrix of six auxiliary TTL input signals
 %
-% 06-22-10 Added GUI file selection and optimized: Craig Patten, Plexon, Inc.
-
-% use MATLAB predefined gui uigetfile to select the file(s) to analyze
-% [file, path, filterindex] = uigetfile('*.int','Select a .int file','MultiSelect', 'off');
-% filename = [path,file];
+%  Examples
+%
+%    >> [filename,t,amps,data,aux] = read_intan_data;
+%    >> plot(t,data(:,1));
+%
+%  NOTES
+%
+%  TODO
+%
+%  BUG FIX
+%
+%% Example headder
+%  INPUTS
+%
+%    channels(required) -must be first input, numeric
+%                        list of channels to load (use keyword 'all' for all)
+%                        channID is 0-indexing, a la neuroscope
+%  Name-value paired inputs:
+%    basepath           - folder in which .lfp file will be found (default
+%                           is pwd)
+%                           folder should follow buzcode standard:
+%                           whateverPath/baseName
+%                           and contain file baseName.lfp
+%    basename           -base file name to load
+%    intervals          -list of time intervals [0 10; 20 30] to read from
+%                           the LFP file (default is [0 inf])
+%
+%  OUTPUT
+%
+%    lfp             struct of lfp data. Can be a single struct or an array
+%                    of structs for different intervals.  lfp(1), lfp(2),
+%                    etc for intervals(1,:), intervals(2,:), etc
+%    .data           [Nt x Nd] matrix of the LFP data
+%    .timestamps     [Nt x 1] vector of timestamps to match LFP data
+%    .interval       [1 x 2] vector of start/stop times of LFP interval
+%    .channels       [Nd X 1] vector of channel ID's
+%    .samplingRate   LFP sampling rate [default = 1250]
+%    .duration       duration, in seconds, of LFP interval
+%
+%  EXAMPLES
+%
+%    % channel ID 5 (= # 6), from 0 to 120 seconds
+%    lfp = bz_GetLFP(5,'restrict',[0 120]);
+%    % same, plus from 240.2 to 265.23 seconds
+%    lfp = bz_GetLFP(5,'restrict',[0 120;240.2 265.23]);
+%    % multiple channels
+%    lfp = bz_GetLFP([1 2 3 4 10 17],'restrict',[0 120]);
+%    % channel # 3 (= ID 2), from 0 to 120 seconds
+%    lfp = bz_GetLFP(3,'restrict',[0 120],'select','number');
+%
+%  NOTES
+%
+%  TODO
+%
+%  BUG FIX
+%
+%    2017-12-13
+%    When total 6 channel recording, 5th and 6th extracting data is 0.
+%    Define the belonging either right/left in from_int_file_to_atf_time_trigger_files
+%    for the additional recording channels.
+%%
 
 fid = fopen(filename, 'r');
 
@@ -66,7 +118,6 @@ end
 % end
 % t_count = t_count - 1;
 % t_max = t_count/25000;
-
 %-----------------------------------
 % replace above code with a more efficient method CDP 06-24-10
 s = dir(filename);
@@ -76,7 +127,7 @@ t_max = t_count/25000;
 %-----------------------------------
 
 % print channel (singular) when there is only one channel! CDP 06-24-10
-if num_amps == 1;
+if num_amps == 1
     fprintf(1, '\nData file contains %0.2f seconds of data from %d amplifier channel.\n', t_max, num_amps);
     fprintf(1, 'Channel: ');
 else
@@ -94,7 +145,7 @@ aux = zeros(t_count,6,'uint8');
 t = (0:1:(t_count-1))/25000;
 t = t';
 %--------------------------------------
-% Replace code code below with much faster code CDP 06-24-10
+% Replace code below with much faster code CDP 06-24-10
 % Go back to the beginning of the file...
 frewind(fid);
 
@@ -104,7 +155,7 @@ fread(fid, 3+64, 'uint8');
 % allocate space to read the entire file
 data2 = zeros((filesize-67),1,'uint8');
 % read the entire file
-fprintf(1, 'Reading data file... ');
+fprintf(1, 'Reading int file... ');
 data2 = fread(fid,(filesize-67),'uint8=>uint8');
 fprintf(1, 'Completed!\n');
 
@@ -136,58 +187,15 @@ fprintf(1, 'Completed!\n');
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Modified v1.1 Need transpose (WI 2016-08-14)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-disp('Extracting recording data... ');
+fprintf(1, 'Extracting recording data... ');
 data4 = vec2mat(data2, num_amps*4+1); % convert into a matrix with num_amps*4+1 columns
 data4(:,num_amps*4+1) = []; % remove the AUX column
-data6 = reshape(data4.',[],1); % convert transposed one to one column
+data6 = reshape(data4.',[],1); % transpose and convert to one column
 data6 = typecast(data6,'single'); % convert 4 bytes binary to single
-data = vec2mat(data6, num_amps); % convert into a matrix of single with num_amps columns
+data = vec2mat(data6, num_amps); % convert to a matrix with num_amps columns
 fprintf(1, 'Completed!\n');
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-
-% % Go back to the beginning of the file...
-% frewind(fid);
-%
-% % ...skip the header this time...
-% fread(fid, 3+64, 'uint8');
-%
-% % ...and read all the data.
-% fprintf(1, 'Reading data...  (This may take a while.)\n\n');
-% for i=1:t_count
-%     for j=1:num_amps
-%         data(i,j) = double(fread(fid, 1, 'float32'));
-%     end
-%
-%     aux_byte = fread(fid, 1, 'uint8');
-%
-%     % Decode auxiliary TTL inputs
-%     if aux_byte >= 32
-%         aux(i,6) = 1;
-%         aux_byte = aux_byte - 32;
-%     end
-%     if aux_byte >= 16
-%         aux(i,5) = 1;
-%         aux_byte = aux_byte - 16;
-%     end
-%     if aux_byte >= 8
-%         aux(i,4) = 1;
-%         aux_byte = aux_byte - 8;
-%     end
-%     if aux_byte >= 4
-%         aux(i,3) = 1;
-%         aux_byte = aux_byte - 4;
-%     end
-%     if aux_byte >= 2
-%         aux(i,2) = 1;
-%         aux_byte = aux_byte - 2;
-%     end
-%     if aux_byte >= 1
-%         aux(i,1) = 1;
-%         aux_byte = aux_byte - 1;
-%     end
-% end
-
 % Close file, and we're done.
 fclose(fid);
-
+end
