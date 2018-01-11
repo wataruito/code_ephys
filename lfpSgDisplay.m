@@ -1,4 +1,4 @@
-% disp_spect.m
+% lfpSgDisplay.m
 %   To display spectrogram with LFP
 %   specify channels to be displayed
 %       ch = [...];

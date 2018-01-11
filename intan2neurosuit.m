@@ -1,4 +1,4 @@
-% intan2neurosuit - Convert Intan file to Neurosuit format.
+%% intan2neurosuit - Convert Intan file to Neurosuit format.
 %
 %  Extract recording data Intan amplifier data files (*.int) and convert
 %  the format readable by Neurosuit.
@@ -57,6 +57,7 @@
 %    for the additional recording channels.
 %
 
+%%
 disp(['The working folder: ' pwd])
 fileList = dir([pwd filesep '*.int']); % Get file list of *.int
 [filesNum, ~] = size(fileList);

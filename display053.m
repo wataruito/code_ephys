@@ -1,4 +1,4 @@
-%##########################################################################
+%% ########################################################################
 % display052working
 %
 % Function:
@@ -29,6 +29,7 @@
 %
 %##########################################################################
 
+%% ########################################################################
 function [] = display053
 
 % Specify a atf file for choosing the target channel
@@ -286,6 +287,7 @@ set(S.hFig, 'KeyPressFcn', {@keyInterfaceOfFigure, S});
 set(S.hPb1, 'callback', {@pb1_call, S});
 set(S.hPb2, 'callback', {@pb2_call, S});
 
+%##########################################################################
 function...
     [dataSeriseFiles, workDataSerise, workTimeSerise,...
     totalSweepNumber, totalSecOrigin] = ...
@@ -352,6 +354,7 @@ if previousDataSeriseFilesNumber < dataSeriseFilesNumber
     end
 end
 
+%##########################################################################
 function [] = changePlotColorRed(S, sweep)
 % Change color of the target plots in the three subplots to red
 
@@ -368,6 +371,7 @@ uistack(handles.hPlot3(sweep),'top');
 
 guidata(S.hFig, handles);
 
+%##########################################################################
 function [] = keyInterfaceOfFigure(varargin)
 hObject =  varargin{1};
 eventdata = varargin{2};
@@ -461,10 +465,6 @@ switch eventdata.Character
         end
 end
 
-
-
-
-
 if (strcmp(eventdata.Character, '<') || strcmp(eventdata.Character, '>'))
     if strcmp(eventdata.Character, '<')
         xoffset = -0.1;
@@ -505,6 +505,7 @@ uistack(handles.hCursor22,'top');
 
 guidata(hObject, handles);
 
+%##########################################################################
 function [] = pb1_call(varargin)
 % Function by pressing this button
 %   1. subtract base
@@ -745,6 +746,7 @@ dragzoom(S1.hFig);
 
 guidata(hObject, handles);
 
+%##########################################################################
 function [] = pb2_call(varargin)
 % Function by pressing "Read additional files"
 %   1. Do dir
@@ -774,5 +776,4 @@ S.hSub1Title.String = ['Sweep 1 / ' num2str(handles.totalSweepNumber)];
 
 guidata(hObject, handles);
 
-
-
+%##########################################################################
