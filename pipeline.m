@@ -16,7 +16,6 @@ for k = 1:filesNum
     
     if d1 == 0
         
-        
         [intFileNameExt,t,amps,data,aux] = ...
             readIntan([pwd filesep fileList(k).name]);
         
@@ -56,6 +55,11 @@ for k = 1:filesNum
         fields = {'amp','phase'};
         gamma = rmfield(gamma,fields);
         
+        disp('Bandpass for alpha-beta');
+        [ alphabeta ] = bz_FilterLFP(lfp,'passband', [10 30]);
+        fields = {'amp','phase'};
+        alphabeta = rmfield(alphabeta,fields);
+               
         disp('Bandpass for theta');
         [ theta ] = bz_FilterLFP(lfp,'passband','theta');
         fields = {'amp','phase'};
@@ -69,6 +73,7 @@ for k = 1:filesNum
         disp('Saving files');
         save([pwd filesep fileNameNoExt '_lfp'], 'lfp', '-v7.3');
         save([pwd filesep fileNameNoExt '_gamma'], 'gamma', '-v7.3');
+        save([pwd filesep fileNameNoExt '_alphabeta'], 'alphabeta', '-v7.3');
         save([pwd filesep fileNameNoExt '_theta'], 'theta', '-v7.3');
         save([pwd filesep fileNameNoExt '_delta'], 'delta', '-v7.3');
         clear gamma theta delta;
@@ -92,27 +97,24 @@ for k = 1:filesNum
         %         fclose(f);
     end
     
+    % Wavelet convolution
     [d1, ~] = size(dir([pwd filesep fileNameNoExt '*specg.mat']));
     if d1 == 0
-        if exist('lfp','var') == 0
+        if exist([pwd filesep fileNameNoExt '_lfp','var') == 0
             disp('Reading lfp files');
             load([pwd filesep fileNameNoExt '_lfp.mat']);
         end
+        
         disp('Wavelet convolution');
         [specg] = wc(lfp);
+        
         disp('Saving specg files');
         save([pwd filesep fileNameNoExt '_specg'], 'specg', '-v7.3');
         clear lfp specg;
     end
+    
+    % End of each .int file 
     fprintf(1, ['### Completed ' num2str(k) '/' num2str(filesNum)...
         ' ### elasped time = ' num2str(cputime - t_start) '\n']);
     
 end
-
-
-
-
-
-
-
-

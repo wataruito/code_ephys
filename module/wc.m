@@ -1,5 +1,6 @@
 function [specg] = wc(lfp)
 % perform wavelet-convolution by fieldtrip
+
 % import lfpdown into fieldtrip format
 data = [];
 data.time = {lfp.timestamps'};
@@ -17,10 +18,11 @@ data.sampleinfo = [1,size(lfp.data,1)];
 cfg = [];
 % cfg.channel = '1';
 cfg.method     = 'wavelet';
-cfg.width      = 3;
+cfg.width      = 5;
 cfg.output     = 'pow';
-cfg.foi        = 1:0.2:20;
+cfg.foi        = 1:0.5:100;
 cfg.toi        = 0.0:0.008:3600.0;
+
 % execute
 specg = ft_freqanalysis(cfg, data);
 
